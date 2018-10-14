@@ -1,0 +1,31 @@
+1 
+	create discord account (and server, optional)
+
+2 
+	download -javadocs, -sources, -withDependencies jars from
+	https://github.com/DV8FromTheWorld/JDA/releases/tag/v3.5.1
+
+3 
+	https://discordapp.com/developers/applications/me
+	new app > create app
+
+4
+	client id: 	501161170590367745
+	client secret:	UbfgkrAo4xmAZkYQmFHh0UVcyi6YVqCo
+	token:		NTAxMTYxMTcwNTkwMzY3NzQ1.DqVW-w.kAtdV78uyzSQ7WbRYY_UL05INLo
+
+5
+	invite url:		
+	https://discordapp.com/api/oauth2/authorize?client_id=501161170590367745&permissions=8&scope=bot
+	- adds the bot to a server of your choice
+
+6 
+	create DiscordBot project in Eclipse, with DiscordBot.java (empty main method)
+
+7
+	configure build path
+	withDependencies
+		- sources
+		- javadoc
+
+8	code the bot and run > logs the bot in
