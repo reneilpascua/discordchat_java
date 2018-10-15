@@ -20,7 +20,6 @@ import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-
 /**
  * Code for Discord bot. Uses JDA (Java Discord API) 
  * Uses Hangman code by Perry Li
@@ -233,6 +232,11 @@ public class DiscordBot extends ListenerAdapter {
             meow(channel);
         }
 
+    }
+    
+    public void onGuildJoin(GuildJoinEvent e) {
+        Guild thisGuild = e.getGuild();
+        // TODO: welcome new user
     }
 
     public void meow(MessageChannel channel) {

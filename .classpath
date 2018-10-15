@@ -12,5 +12,10 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Reneil Pascua/Desktop/Projects/discordchat_java/jars/JDA-3.8.1/gradle/wrapper/gradle-wrapper.jar" sourcepath="C:/Users/Reneil Pascua/Desktop/Projects/discordchat_java/jars/JDA-3.8.1/gradle/wrapper/gradle-wrapper.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
