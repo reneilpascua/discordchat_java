@@ -16,11 +16,24 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-public class DiscordBot extends ListenerAdapter {
 
+/**
+ * Code for Discord bot. Uses JDA (Java Discord API) 
+ * Uses Hangman code by Perry Li
+ * Work in progress -- some ideas:
+ *      - reddit
+ *      - cleverbot
+ *      - moderator capabilities
+ * @author Reneil Pascua
+ *
+ */
+public class DiscordBot extends ListenerAdapter {
+    String botName;
+    
     Guild guild;
     boolean echo = false;
     
@@ -34,6 +47,9 @@ public class DiscordBot extends ListenerAdapter {
     private int myRPS;
     private String myRPS_;
     
+    Hangman hmGame;
+    boolean hangmanSolve = false;
+    
     /**
      * log the bot in (given valid token)
      * @param args
@@ -46,10 +62,17 @@ public class DiscordBot extends ListenerAdapter {
             // when the program is run
             JDA jda = new JDABuilder(AccountType.BOT)
                     .setToken("NTAxMTYxMTcwNTkwMzY3NzQ1.DqVW-w.kAtdV78uyzSQ7WbRYY_UL05INLo")
-                    .addEventListener(new DiscordBot()).buildBlocking();
+                    .addEventListener(new DiscordBot("Misty")).buildBlocking();
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * constructor for DiscordBot
+     */
+    public DiscordBot(String name) {
+        botName = name;
     }
     
     /**
@@ -85,7 +108,7 @@ public class DiscordBot extends ListenerAdapter {
             System.out.printf("(%s)[%s]<%s>: %s\n", guild.getName(), tchannel.getName(), name, msg);
         }
         
-        // from this point on, don't do anything if the last sender was a bot.
+        // from this point on, don't do anything if the received message was a bot.
         if (isbot) {
             return;
         }
@@ -98,11 +121,13 @@ public class DiscordBot extends ListenerAdapter {
         // greet
         if (msg.equalsIgnoreCase("hi")) {
             greeting(channel);
+            meow(channel);
         }
         
         // lists commands
         if (msg.equalsIgnoreCase("!commands")) {
             commands(channel);
+            meow(channel);
         }
         
         ////////////////////////////
@@ -138,6 +163,7 @@ public class DiscordBot extends ListenerAdapter {
             remUser = author;
             channel.sendMessage("what do you want me to remind you?\n"
                     + "ex.) take out the trash, do your homework").queue();
+            meow(channel);
         }
         ///////// reminder part ends ////////////
         
@@ -163,6 +189,7 @@ public class DiscordBot extends ListenerAdapter {
             }
             rpsGame= false;
             rpsUser= null;
+            myRPS_ = null;
         }
         
         if(msg.equalsIgnoreCase("!rps")) {
@@ -171,11 +198,46 @@ public class DiscordBot extends ListenerAdapter {
             channel.sendMessage(rpsUser.getAsMention() + "let's play"
                     + " rock paper scissors!").queue();
             myRPS_ = RPS.values()[guessRPS()].name();
+            meow(channel);
             
         }
         //////////// end of rock paper scissors block /////////
+        
+        /////////////////////////////////////////////////////
+        ///////// HANGMAN (author: Perry Li) ////////////////
+        /////////////////////////////////////////////////////
+        
+        if (hangmanSolve) {
+            hmGame.checkGuess(msg, channel);
+        }
+
+        if (msg.equals("!solve")) {
+            hangmanSolve = true;
+            channel.sendMessage("Please enter your guess: ").queue();
+        } else {
+            hangmanSolve = false;
+        }
+        
+        if (msg.equals("!hangman")) {
+            hmGame = new Hangman(channel);
+            hmGame.drawHangman(channel, null);
+            meow(channel);
+        }
+        
+        if (msg.length() == 1 && hmGame.getStart()) {
+            hmGame.drawHangman(channel, msg);
+        }
+        /////// end of hangman section ///////
+        
+        if (msg.equalsIgnoreCase("hi misty")) {
+            meow(channel);
+        }
+
     }
-    
+
+    public void meow(MessageChannel channel) {
+        channel.sendMessage("meow").queue();
+    }
     public void greeting(MessageChannel channel) {
         String greeting = "hello";
         channel.sendMessage(greeting).queue();
@@ -184,8 +246,12 @@ public class DiscordBot extends ListenerAdapter {
     // helpful commands message for user
     public void commands(MessageChannel channel) {
         channel.sendMessage(
-                "These are the available commands:\n"
-                + "hi - prints greeting \"hey there\"")
+                "These are "+botName+"'s available commands / responses:\n"
+                + "hi --> greets you\n"
+                + "set reminder --> sets reminder\n"
+                + "!commands --> prints available commands\n"
+                + "!rps --> plays rock paper scissors\n"
+                + "!hangman --> plays hangman\n")
         .queue();
     }
     
@@ -198,7 +264,6 @@ public class DiscordBot extends ListenerAdapter {
     public boolean calculateRPS(int myG, int userG) {
         return (userG == myG+1 || userG ==  myG-2);
     }
-    
 }
 
 enum RPS {
