@@ -2,6 +2,7 @@ package bot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.core.AccountType;
@@ -25,7 +26,13 @@ public class DiscordBot extends ListenerAdapter {
     
     boolean settingRem = false;
     boolean setRemTime = false;
+    User remUser;
     String rmd;
+    
+    boolean rpsGame = false;
+    User rpsUser; // the user that is playing rock paper scissors
+    private int myRPS;
+    private String myRPS_;
     
     /**
      * log the bot in (given valid token)
@@ -101,22 +108,24 @@ public class DiscordBot extends ListenerAdapter {
         ////////////////////////////
         // REMINDER SETTING BLOCK //
         ////////////////////////////
-        if (setRemTime) {
+        if (setRemTime && author == remUser) {
             try {
                 int length = Integer.parseInt(msg);
                 channel.sendMessage("ok, will remind you to:\n"+rmd+"\nin "+length
-                        + " minutes.").queue();
+                        + " minute(s).").queue();
                 setRemTime = false;
-                channel.sendMessage(author.getAsMention() + "\n" + rmd + " NOW!!")
+                channel.sendMessage(remUser.getAsMention() + "\n" + rmd + " NOW!!")
                 .queueAfter(length, TimeUnit.MINUTES);
+                remUser = null;
             } catch (Exception e) {
                 channel.sendMessage("oops, something went wrong"
                         + "\nplease start over setting the reminder.").queue();
                 setRemTime = false;
+                remUser = null;
             }
         }
         
-        if (settingRem) {
+        if (settingRem && author == remUser) {
             rmd = msg;
             setRemTime = true;
             channel.sendMessage("in how many minutes?").queue();
@@ -126,14 +135,45 @@ public class DiscordBot extends ListenerAdapter {
         // starts reminder prompt
         if (!settingRem && !setRemTime && msg.equalsIgnoreCase("set reminder")) {
             settingRem = true;
+            remUser = author;
             channel.sendMessage("what do you want me to remind you?\n"
                     + "ex.) take out the trash, do your homework").queue();
         }
         ///////// reminder part ends ////////////
         
+        /////////////////////////////////////////
+        /// ROCK PAPER SCISSORS BLOCK ///////////
+        /////////////////////////////////////////
+        if(author == rpsUser && rpsGame) {
+            int userRPS=0;
+            if (msg.equals("rock")) {
+                userRPS = 0;
+            } else if (msg.equals("paper")) {
+                userRPS = 1;
+            } else if (msg.equals("scissors")) {
+                userRPS = 2;
+            } else {
+                channel.sendMessage("please enter one of rock, paper, or scissors").queue();
+                return; // move on to the next response
+            }
+            if (calculateRPS(myRPS, userRPS)) {
+                channel.sendMessage("I had "+myRPS_+ ". You win!").queue();
+            } else {
+                channel.sendMessage("I had "+myRPS_+ ". You lose!").queue();
+            }
+            rpsGame= false;
+            rpsUser= null;
+        }
         
-        
-        
+        if(msg.equalsIgnoreCase("!rps")) {
+            rpsUser = author;
+            rpsGame = true;
+            channel.sendMessage(rpsUser.getAsMention() + "let's play"
+                    + " rock paper scissors!").queue();
+            myRPS_ = RPS.values()[guessRPS()].name();
+            
+        }
+        //////////// end of rock paper scissors block /////////
     }
     
     public void greeting(MessageChannel channel) {
@@ -149,5 +189,18 @@ public class DiscordBot extends ListenerAdapter {
         .queue();
     }
     
+    private int guessRPS() {
+        Random rng = new Random();
+        myRPS = rng.nextInt(3);
+        return myRPS;
+    }
     
+    public boolean calculateRPS(int myG, int userG) {
+        return (userG == myG+1 || userG ==  myG-2);
+    }
+    
+}
+
+enum RPS {
+    rock, paper, scissors
 }
